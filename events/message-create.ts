@@ -7,17 +7,24 @@ const messageCreate = createEventHandler('messageCreate', async (message) => {
 
 	console.log(`in ${message.channel} ${message.author.tag} sent: ${message.content}`);
 	let hasBanned = false;
-	
+
 	constants.BANNED_PHRASES.forEach(async (bannedPhrase) => {
-		if (!hasBanned && message.content.toLocaleLowerCase().includes(bannedPhrase.toLowerCase())) {
+		if (
+			!hasBanned &&
+			message.content.toLocaleLowerCase().includes(bannedPhrase.toLowerCase())
+		) {
 			await message.delete();
-			await message.channel.send(
-				`<@${message.author.id}> you sent a banned phrase, stop !`,
-			);
-			await (await message.author.createDM()).send(`You sent "${bannedPhrase}", which is not okay!`);
+			await message.channel.send(`<@${message.author.id}> you sent a banned phrase, stop !`);
+			try {
+				await (
+					await message.author.createDM()
+				).send(`You sent "${bannedPhrase}", which is not okay!`);
+			} catch (e) {
+				console.log(`cannot dm ${message.author.tag}`);
+			}
 			hasBanned = true;
 		}
-	})
+	});
 });
 
 export default messageCreate;
